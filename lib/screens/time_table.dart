@@ -2,11 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/teachers_provider.dart';
 import '../models/timetable.dart';
-import '../models/teacher.dart'; // Add this import
+import '../models/teacher.dart';
+import 'dart:math';
 
 class TimeTableScreen extends StatelessWidget {
+  const TimeTableScreen({super.key});
+
   List<TimeTableEntry> generateTimeTable(List<Teacher> teachers) {
-    // Basic algorithm to generate a timetable
     List<TimeTableEntry> timetable = [];
     List<String> days = [
       'Saturday',
@@ -14,23 +16,43 @@ class TimeTableScreen extends StatelessWidget {
       'Monday',
       'Tuesday',
       'Wednesday',
-      'Thursday',
-      'Friday'
+      'Thursday'
     ];
 
-    int teacherIndex = 0;
+    // Keep track of assigned hours for each teacher
+    Map<String, int> teacherHours = {
+      for (var teacher in teachers) teacher.name: 0
+    };
+    Random random = Random();
+
     for (String day in days) {
-      for (int session = 1; session <= 3; session++) {
-        if (teacherIndex >= teachers.length) {
-          teacherIndex = 0;
+      for (int session = 1; session <= 2; session++) {
+        if (teachers.isEmpty) {
+          break;
         }
+
+        // Select a teacher randomly
+        Teacher selectedTeacher;
+        do {
+          selectedTeacher = teachers[random.nextInt(teachers.length)];
+        } while (teacherHours[selectedTeacher.name]! >= 24);
+
+        // Add the session to the timetable
         timetable.add(TimeTableEntry(
-          teacher: teachers[teacherIndex].name,
-          subject: teachers[teacherIndex].subject,
+          teacher: selectedTeacher.name,
+          subject: selectedTeacher.subject,
           day: day,
           time: 'Session $session',
         ));
-        teacherIndex++;
+
+        // Update the teacher's assigned hours
+        teacherHours[selectedTeacher.name] =
+            teacherHours[selectedTeacher.name]! + 2;
+
+        // Remove teacher if they have reached 24 hours
+        if (teacherHours[selectedTeacher.name]! >= 24) {
+          teachers.remove(selectedTeacher);
+        }
       }
     }
 
@@ -42,11 +64,11 @@ class TimeTableScreen extends StatelessWidget {
     final teachersProvider = Provider.of<TeachersProvider>(context);
 
     List<TimeTableEntry> timetable =
-        generateTimeTable(teachersProvider.teachers);
+        generateTimeTable(teachersProvider.teachers.toList());
 
     return Scaffold(
       appBar: AppBar(
-        title: Text('Time Table'),
+        title: const Text('Time Table'),
       ),
       body: Column(
         children: [
@@ -72,11 +94,19 @@ class TimeTableScreen extends StatelessWidget {
               ),
             ),
           ),
-          ElevatedButton(
-            onPressed: () {
-              timetable = generateTimeTable(teachersProvider.teachers);
-            },
-            child: Text('Regenerate'),
+          Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                onPressed: () {
+                  timetable =
+                      generateTimeTable(teachersProvider.teachers.toList());
+                  (context as Element).reassemble();
+                },
+                child: const Text('Regenerate'),
+              ),
+            ),
           ),
         ],
       ),

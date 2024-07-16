@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import '../models/teacher.dart';
 
 class TeachersProvider with ChangeNotifier {
-  List<Teacher> _teachers = [];
+  final List<Teacher> _teachers = [];
 
   List<Teacher> get teachers => _teachers;
 

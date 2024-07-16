@@ -11,12 +11,14 @@ void main() {
       providers: [
         ChangeNotifierProvider(create: (_) => TeachersProvider()),
       ],
-      child: ScheduleSmartApp(),
+      child: const ScheduleSmartApp(),
     ),
   );
 }
 
 class ScheduleSmartApp extends StatelessWidget {
+  const ScheduleSmartApp({super.key});
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -27,8 +29,8 @@ class ScheduleSmartApp extends StatelessWidget {
       initialRoute: '/',
       routes: {
         '/': (context) => CsTimeTaker(),
-        '/teachers_list': (context) => TeachersList(),
-        '/time_table': (context) => TimeTableScreen(),
+        '/teachers_list': (context) => const TeachersList(),
+        '/time_table': (context) => const TimeTableScreen(),
       },
     );
   }
